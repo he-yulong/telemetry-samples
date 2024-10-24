@@ -1,0 +1,38 @@
+receivers:
+    otlp:
+        protocols:
+            http:
+                endpoint: localhost:4318
+            grpc:
+                endpoint: localhost:4317
+    # Data sources: metrics
+    prometheus:
+        config:
+            scrape_configs:
+                - job_name: gravel-gateway
+                  scrape_interval: 5s
+                  static_configs:
+                    - targets: [localhost:4278]
+            
+processors:
+    batch:
+    
+exporters:
+    logging:
+        loglevel: debug
+    prometheus:
+        endpoint: 0.0.0.0:8889
+        resource_to_telemetry_conversion:
+            enabled: true
+            
+service:
+    pipelines:
+        traces:
+            receivers: [otlp]
+            exporters: [logging]
+        metrics:
+            receivers: [otlp, prometheus]
+            exporters: [logging]
+        logs:
+            receivers: [otlp]
+            exporters: [logging]
